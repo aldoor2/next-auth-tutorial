@@ -1,24 +1,36 @@
-import { getSession } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/router'
 
-function HomePage({ session }) {
-  const { user } = session
+function HomePage() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+
+  if (status === 'loading') {
+    return <p>Loading...</p>
+  }
+
+  if (status === 'unauthenticated') {
+    router.push('/login')
+  }
+
   return (
     <div>
-      <h2>{user.name}</h2>
-      <p>{user.email}</p>
-      <img src={user.image} alt={user.name} />
+      {
+        session
+          ? (
+            <>
+              <h2>{session.user.name}</h2>
+              <p>{session.user.email}</p>
+              <img src={session.user.image} loading='lazy' alt={session.user.name} />
+              <button onClick={() => router.push('/api/auth/signout')}>Logout</button>
+            </>
+          )
+          : (<p>Skeleton</p>)
+      }
     </div>
   )
 }
 
-export const getServerSideProps = async (context) => {
-  const session = await getSession(context)
 
-  return {
-    props: {
-      session,
-    }
-  }
-}
 
 export default HomePage
