@@ -1,17 +1,10 @@
-import { useSession } from 'next-auth/react'
+import { getSession } from 'next-auth/react'
+import Image from 'next/image'
 import { useRouter } from 'next/router'
 
-function HomePage() {
-  const { data: session, status } = useSession()
+function HomePage({ session }) {
+
   const router = useRouter()
-
-  if (status === 'loading') {
-    return <p>Loading...</p>
-  }
-
-  if (status === 'unauthenticated') {
-    router.push('/login')
-  }
 
   return (
     <div>
@@ -21,7 +14,12 @@ function HomePage() {
             <>
               <h2>{session.user.name}</h2>
               <p>{session.user.email}</p>
-              <img src={session.user.image} loading='lazy' alt={session.user.name} />
+              <Image
+                src={session.user.image}
+                alt={session.user.name}
+                width='100%'
+                height='100%'
+              />
               <button onClick={() => router.push('/api/auth/signout')}>Logout</button>
             </>
           )
@@ -31,6 +29,22 @@ function HomePage() {
   )
 }
 
+export const getServerSideProps = async (context) => {
 
+  const session = await getSession(context)
+
+  if (!session) return {
+    redirect: {
+      destination: '/login',
+      permanent: false
+    }
+  }
+
+  return {
+    props: {
+      session
+    }
+  }
+}
 
 export default HomePage
