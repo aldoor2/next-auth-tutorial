@@ -1,5 +1,7 @@
-import { getSession, signOut } from 'next-auth/react'
+import { unstable_getServerSession } from "next-auth/next"
+import { signOut } from 'next-auth/react'
 import Image from 'next/image'
+import { authOptions } from './api/auth/[...nextauth].js'
 
 function HomePage({ session }) {
   return (
@@ -30,7 +32,7 @@ function HomePage({ session }) {
 
 export const getServerSideProps = async (context) => {
 
-  const session = await getSession(context)
+  const session = await unstable_getServerSession(context.req, context.res, authOptions)
 
   if (!session) return {
     redirect: {
